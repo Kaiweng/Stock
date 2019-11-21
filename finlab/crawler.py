@@ -49,6 +49,9 @@ def crawl_price(date):
     
     lines = content.split('\n') #原內容是連續的,是html語法,\n是斷行,利用這個特性分行
     lines = list(filter(lambda l:len(l.split('",')) > 10, lines)) #因為每行以,號區分成欄,但每欄不同,其中超過10行的才是股價資料,以此特性過濾
+    #lambda 無名函數:可以看成是函數,所以不見得要給值
+    #filter 過濾函數條件,後面要放內容
+    #list 轉成列表
     content = "\n".join(lines) #再連接起來
     
     if content == '':
@@ -56,7 +59,11 @@ def crawl_price(date):
     
     df = pd.read_csv(StringIO(content)) #StringIO好像是把內容轉成像檔案,這樣read_csv才能讀取?
     df = df.astype(str)
-    df = df.apply(lambda s: s.str.replace(',', '')) #
+    df = df.apply(lambda s: s.str.replace(',', ''))
+    #特殊用法,
+    #https://pandas.pydata.org/pandas-docs/stable/user_guide/text.html
+    #https://www.runoob.com/python3/python3-string-replace.html
+    
     df['date'] = pd.to_datetime(date)
     df = df.rename(columns={'證券代號':'stock_id'})
     df = df.set_index(['stock_id', 'date'])
@@ -64,6 +71,9 @@ def crawl_price(date):
     df = df.apply(lambda s:pd.to_numeric(s, errors='coerce')) #to_numeric是把資料轉成數字,參數errors='coerce'是把不能轉的直接變成NaN
     df = df[df.columns[df.isnull().all() == False]] #去掉都是NaN的欄
     df = df[~df['收盤價'].isnull()] 
+    #~是像not的作用,
+    
+    #df[df['收盤價'].isnull()],df[]中有點像判斷式,過濾需要的資料列
 
     
     return df
